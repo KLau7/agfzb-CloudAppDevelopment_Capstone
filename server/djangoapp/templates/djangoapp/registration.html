@@ -5,7 +5,28 @@
     {% load static %}
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
-    <body>
-    <!--Add a registration form here -->
+    <body class='px-2'>
+        <h1>Sign Up</h1>
+        <hr />
+        <form class='d-flex flex-column' action='{% url "djangoapp:signup" %}' method='post'>
+            {% csrf_token %}
+            <label class='font-weight-bold' for='username'>
+                User Name
+            </label>
+            <input id='username' type='text' name='username' placeholder='Enter User Name:' />
+            <label class='font-weight-bold' for='firstname'>
+                First Name
+            </label>
+            <input id='firstname' type='text' name='firstname' placeholder='Enter First Name:' />
+            <label class='font-weight-bold' for='lastname'>
+                Last Name
+            </label>
+            <input id='lastname' type='text' name='lastname' placeholder='Enter Last Name:' />
+            <label class='font-weight-bold' for='password'>
+                Password
+            </label>
+            <input id='password' type='password' name='password' placeholder='Enter Password:' />
+            <input type='submit' class='btn btn-primary' value='Sign up' />
+        </form>
     </body>
 </html>

@@ -15,9 +15,26 @@
 
     <body>
     <!--Add a nav bar here -->
-    <nav>
-        <a href='{% url "djangoapp:about" %}'>About Us</a>
-        <a href='{% url "djangoapp:contact" %}'>Contact Us</a>
+    <nav class='d-flex justify-content-between align-items-center px-2'>
+        <div class='d-flex'>
+            Dealership
+            <a href='{% url "djangoapp:about" %}' class='ml-2'>About Us</a>
+            <a href='{% url "djangoapp:contact" %}' class='ml-2'>Contact Us</a>
+        </div>
+        <div class='d-flex align-items-center'>
+            {% if not request.user.is_authenticated %}
+            <form class='form-inline' action='{% url "djangoapp:login" %}' method='post'>
+                {% csrf_token %}
+                <input class='form-control' type='text' name='username' placeholder='username' />
+                <input class='form-control' type='password' name='password' placeholder='password' />
+                <input class='btn btn-primary' type='submit' value='Login' />
+            </form>
+            <a class='ml-2' href='{% url "djangoapp:signup" %}'>Signup</a>
+            {% else %}
+            ({{ user.username }})
+            <a class='btn btn-primary ml-2' href='{% url "djangoapp:logout" %}'>Logout</a>
+            {% endif %}
+        </div>
     </nav>
     <!--Add a dealer table here -->
 
