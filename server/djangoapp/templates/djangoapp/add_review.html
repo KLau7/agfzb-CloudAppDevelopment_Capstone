@@ -11,6 +11,24 @@
 
 </head>
     <body>
-    <!--Add review form here -->
+        <form class='d-flex flex-column' action='{% url "djangoapp:add_review" dealer_id %}' method='post'>
+            {% csrf_token %}
+            <label class='font-weight-bold' for='car_make'>Car Make</label>
+            <input id='car_make' type='text' name='car_make' placeholder='Enter Car Make:' />
+            
+            <label class='font-weight-bold' for='car_model'>Car Model</label>
+            <input id='car_model' type='text' name='car_model' placeholder='Enter Car Model:' />
+            
+            <label class='font-weight-bold' for='car_year'>Car Year</label>
+            <input id='car_year' type='date' name='car_year' placeholder='Enter Car Year:' />
+            
+            <label class='font-weight-bold' for='purchase_date'>Purchase date</label>
+            <input id='purchase_date' type='date' name='purchase_date' placeholder='Enter Purchase Date:' />
+            
+            <label class='font-weight-bold' for='review'>Review</label>
+            <input id='review' type='text' name='review' placeholder='Enter Review:' />
+            
+            <input type='submit' class='btn btn-primary' value='Submit' />
+        </form>
     </body>
 </html>

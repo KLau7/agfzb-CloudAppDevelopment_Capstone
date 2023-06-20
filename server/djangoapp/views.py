@@ -10,7 +10,7 @@ from django.contrib import messages
 from datetime import datetime
 import logging
 import json
-from .restapis import get_dealers_from_cf, get_dealer_by_id_from_cf
+from .restapis import get_dealers_from_cf, get_dealer_by_id_from_cf, post_request
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -80,6 +80,23 @@ def get_dealer_details(request, dealer_id):
         return HttpResponse(dealer)
 
 # Create a `add_review` view to submit a review
-# def add_review(request, dealer_id):
-# ...
+def add_review(request, dealer_id):
+    if request.user.is_authenticated:
+        if request.method == 'GET':
+            return render(request, 'djangoapp/add_review.html', { 'dealer_id': dealer_id })
+        elif request.method == 'POST':
+            review = {}
+            review['car_make'] = request.POST['car_make']
+            review['car_model'] = request.POST['car_model']
+            review['car_year'] = request.POST['car_year']
+            review['purchase_date'] = request.POST['purchase_date']
+            review['review'] = request.POST['review']
+            review['name'] = request.user.username
+            review['purchase'] = False
+            # review["time"] = datetime.utcnow().isoformat()
+            review['dealership'] = dealer_id
+            response = post_request('https://us-south.functions.appdomain.cloud/api/v1/web/f65fcf3d-6503-43a5-956c-c6ccef1a7764/dealership-package/post-review', { 'review': review }, dealerId=dealer_id)
+            return HttpResponse(response)
+    else:
+        return redirect(reverse('djangoapp:index'))
 

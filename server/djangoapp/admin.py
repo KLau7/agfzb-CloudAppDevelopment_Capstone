@@ -13,6 +13,7 @@ class CarModelInline(admin.TabularInline):
 # CarModelAdmin class
 class CarModelAdmin(admin.ModelAdmin):
     search_fields = ['car_make', 'name', 'type', 'year']
+    list_display = ['name', 'car_make', 'type', 'year']
 
 # CarMakeAdmin class with CarModelInline
 class CarMakeAdmin(admin.ModelAdmin):
