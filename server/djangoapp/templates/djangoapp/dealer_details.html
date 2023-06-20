@@ -40,7 +40,7 @@
             {% for review in reviews %}
             <div class='card bg-light'>
                 <div class='card-header'>
-                    <img class="card-img-left mt-2" style='width: 2rem;' src='{{MEDIA_URL}}/emoji/positive.png'>
+                    <img class="card-img-left mt-2" style='width: 2rem;' src='{{MEDIA_URL}}/emoji/{{review.sentiment}}.png'>
                 </div>
                 <div class='card-body'>
                     <h4 class='card-title'>{{review.car_make}}, {{review.car_model}}</h4>

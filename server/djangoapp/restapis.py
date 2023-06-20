@@ -17,6 +17,11 @@ def get_request(url, **kwargs):
     try:
         # Call get method of requests library with URL and parameters
         if 'api_key' in kwargs:
+            # params = dict()
+            # params["text"] = kwargs["text"]
+            # params["version"] = kwargs["version"]
+            # params["features"] = kwargs["features"]
+            # params["return_analyzed_text"] = kwargs["return_analyzed_text"]
             response = requests.get(url, params=kwargs, headers={'Content-Type': 'application/json'},
                 auth=HTTPBasicAuth('apikey', kwargs.get('api_key')))
         else:
@@ -49,7 +54,6 @@ def get_dealers_from_cf(url, **kwargs):
     results = []
     # Call get_request with a URL parameter
     json_result = get_request(url)
-    # print('json_result', json_result)
     if json_result:
         # For each dealer object
         for dealer_doc in json_result:
@@ -74,9 +78,7 @@ def get_dealer_reviews_from_cf(url, dealerId):
     json_result = get_request(url, dealerId=dealerId)
     result = []
     for doc in json_result:
-        # sentiment = analyze_review_sentiments(doc['review'])
-        sentiment = 'neutral'
-        print('sentiment: ', sentiment)
+        sentiment = analyze_review_sentiments(doc['review'])
         review_obj = DealerReview(
             dealership = doc['dealership'],
             id = doc['_id'],
@@ -96,11 +98,6 @@ def get_dealer_reviews_from_cf(url, dealerId):
 # - Call get_request() with specified arguments
 # - Get the returned sentiment label such as Positive or Negative
 def analyze_review_sentiments(text):
-    # params["text"] = kwargs["text"]
-    # params["version"] = kwargs["version"]
-    # params["features"] = kwargs["features"]
-    # params["return_analyzed_text"] = kwargs["return_analyzed_text"]
-
     authenticator = IAMAuthenticator('q0gjsWC81P0Q7h3LK6swMGTsRC1ZGwe-U_fFk3rxH72-')
     natural_language_understanding = NaturalLanguageUnderstandingV1(
         version='2022-04-07',
@@ -110,11 +107,9 @@ def analyze_review_sentiments(text):
     natural_language_understanding.set_service_url('https://api.au-syd.natural-language-understanding.watson.cloud.ibm.com/instances/c4d89b24-007a-4e2d-a921-f92372e157c0')
 
     response = natural_language_understanding.analyze(
-        text='I am happy!',
-        features=Features(sentiment=SentimentOptions(targets=['English']))
+        text=text,
+        features=Features(sentiment=SentimentOptions(document=True)),
+        language='en'
     ).get_result()
-    # print('analysis: ', response)
-    print(json.dumps(response, indent=2))
-
-    # response = get_request('https://api.au-syd.natural-language-understanding.watson.cloud.ibm.com/instances/c4d89b24-007a-4e2d-a921-f92372e157c0', api_key='q0gjsWC81P0Q7h3LK6swMGTsRC1ZGwe-U_fFk3rxH72-')
-    return response
+    
+    return response['sentiment']['document']['label']
