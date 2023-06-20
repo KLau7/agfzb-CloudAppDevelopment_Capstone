@@ -4,6 +4,10 @@ import json
 from requests.auth import HTTPBasicAuth
 from .models import CarDealer, DealerReview
 
+from ibm_watson import NaturalLanguageUnderstandingV1
+from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
+from ibm_watson.natural_language_understanding_v1 import Features, SentimentOptions
+
 # Create a `get_request` to make HTTP GET requests
 # e.g., response = requests.get(url, params=params, headers={'Content-Type': 'application/json'},
 #                                     auth=HTTPBasicAuth('apikey', api_key))
@@ -12,11 +16,19 @@ def get_request(url, **kwargs):
     print("GET from {} ".format(url))
     try:
         # Call get method of requests library with URL and parameters
-        response = requests.get(url, headers={'Content-Type': 'application/json'},
-                                    params=kwargs)
+        if 'api_key' in kwargs:
+            response = requests.get(url, params=kwargs, headers={'Content-Type': 'application/json'},
+                auth=HTTPBasicAuth('apikey', kwargs.get('api_key')))
+        else:
+            response = requests.get(url, headers={'Content-Type': 'application/json'},
+                params=kwargs)
     except:
         # If any error occurs
         print("Network exception occurred")
+        response = {
+            'status_code': 500,
+            'text': 'Server error'
+        }
     status_code = response.status_code
     print("With status {} ".format(status_code))
     json_data = json.loads(response.text)
@@ -53,23 +65,49 @@ def get_dealers_from_cf(url, **kwargs):
 # - Parse JSON results into a DealerView object list
 def get_dealer_by_id_from_cf(url, dealerId):
     json_result = get_request(url, dealerId=dealerId)
-    obj = DealerReview(
-        dealership = json_result['dealership'],
-        id = json_result['id'],
-        name = json_result['name'],
-        purchase = json_result['purchase'],
-        review = json_result['review'],
-        purchase_date = json_result['purchase_date'],
-        car_make = json_result['car_make'],
-        car_model = json_result['car_model'],
-        car_year = json_result['car_year'],
-        sentiment = json_result['sentiment']
-    )
-    return json_result
+    result = []
+    for doc in json_result:
+        # sentiment = analyze_review_sentiments(doc['review'])
+        sentiment = 'neutral'
+        print('sentiment: ', sentiment)
+        review_obj = DealerReview(
+            dealership = doc['dealership'],
+            id = doc['id'],
+            name = doc['name'],
+            purchase = doc['purchase'],
+            review = doc['review'],
+            purchase_date = doc.get('purchase_date', ''),
+            car_make = doc.get('car_make', ''),
+            car_model = doc.get('car_model', ''),
+            car_year = doc.get('car_year', ''),
+            sentiment = sentiment)
+        result.append(review_obj)
+    return result
 
 # Create an `analyze_review_sentiments` method to call Watson NLU and analyze text
 # def analyze_review_sentiments(text):
 # - Call get_request() with specified arguments
 # - Get the returned sentiment label such as Positive or Negative
+def analyze_review_sentiments(text):
+    # params["text"] = kwargs["text"]
+    # params["version"] = kwargs["version"]
+    # params["features"] = kwargs["features"]
+    # params["return_analyzed_text"] = kwargs["return_analyzed_text"]
 
+    authenticator = IAMAuthenticator('q0gjsWC81P0Q7h3LK6swMGTsRC1ZGwe-U_fFk3rxH72-')
+    natural_language_understanding = NaturalLanguageUnderstandingV1(
+        version='2022-04-07',
+        authenticator=authenticator
+    )
 
+    natural_language_understanding.set_service_url('https://api.au-syd.natural-language-understanding.watson.cloud.ibm.com/instances/c4d89b24-007a-4e2d-a921-f92372e157c0')
+
+    response = natural_language_understanding.analyze(
+        text='I am happy!',
+        features=Features(sentiment=SentimentOptions(targets=['English']))
+    ).get_result()
+    # print('analysis: ', response)
+    print(json.dumps(response, indent=2))
+
+    # response = get_request('https://api.au-syd.natural-language-understanding.watson.cloud.ibm.com/instances/c4d89b24-007a-4e2d-a921-f92372e157c0', api_key='q0gjsWC81P0Q7h3LK6swMGTsRC1ZGwe-U_fFk3rxH72-')
+    return response

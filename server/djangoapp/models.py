@@ -80,4 +80,4 @@ class DealerReview:
         self.sentiment = sentiment
 
     def __str__(self):
-        return "Review: " + self.review + ' for ' + self.car_model
+        return f"Review ({ self.car_make } / { self.car_model }): { self.review } ({self.sentiment})"
