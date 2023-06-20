@@ -26,7 +26,7 @@
             </form>
             <a class='ml-2' href='{% url "djangoapp:signup" %}'>Signup</a>
             {% else %}
-            <a href='' class='mr-2'>Add review</a>
+            <a href='{% url "djangoapp:add_review" dealer_id %}' class='mr-2'>Add review</a>
             ({{ user.username }})
             <a class='btn btn-primary ml-2' href='{% url "djangoapp:logout" %}'>Logout</a>
             {% endif %}
@@ -34,19 +34,22 @@
     </nav>
 
     <!-- Add reviews as cards -->
-    <div class='card-columns m-2'>
-        {% for review in reviews %}
-        <div class='card bg-light'>
-            <div class='card-header'>
-                <img class="card-img-left mt-2" style='width: 2rem;' src='{{MEDIA_URL}}/emoji/positive.png'>
+    <div>
+        <h2>Reviews for {{ dealer.full_name }}</h2>
+        <div class='card-columns m-2'>
+            {% for review in reviews %}
+            <div class='card bg-light'>
+                <div class='card-header'>
+                    <img class="card-img-left mt-2" style='width: 2rem;' src='{{MEDIA_URL}}/emoji/positive.png'>
+                </div>
+                <div class='card-body'>
+                    <h4 class='card-title'>{{review.car_make}}, {{review.car_model}}</h4>
+                    <h5 class='card-subtitle'>{{review.car_year}}</h5>
+                    <div class='card-text'>{{review.review}}</div>
+                </div>
             </div>
-            <div class='card-body'>
-                <h4 class='card-title'>{{review.car_make}}, {{review.car_model}}</h4>
-                <h5 class='card-subtitle'>{{review.car_year}}</h5>
-                <div class='card-text'>{{review.review}}</div>
-            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
     </body>
 

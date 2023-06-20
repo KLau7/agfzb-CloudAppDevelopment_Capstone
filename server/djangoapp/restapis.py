@@ -62,6 +62,10 @@ def get_dealers_from_cf(url, **kwargs):
 
     return results
 
+def get_dealer_from_cf(dealerId):
+    json_result = get_request('https://us-south.functions.appdomain.cloud/api/v1/web/f65fcf3d-6503-43a5-956c-c6ccef1a7764/dealership-package/get-dealership', dealer_id=dealerId)
+    return json_result
+
 # Create a get_dealer_reviews_from_cf method to get reviews by dealer id from a cloud function
 # def get_dealer_by_id_from_cf(url, dealerId):
 # - Call get_request() with specified arguments
@@ -75,7 +79,7 @@ def get_dealer_reviews_from_cf(url, dealerId):
         print('sentiment: ', sentiment)
         review_obj = DealerReview(
             dealership = doc['dealership'],
-            id = doc['id'],
+            id = doc['_id'],
             name = doc['name'],
             purchase = doc['purchase'],
             review = doc['review'],

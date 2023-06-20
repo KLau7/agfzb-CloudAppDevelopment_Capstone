@@ -10,7 +10,8 @@ from django.contrib import messages
 from datetime import datetime
 import logging
 import json
-from .restapis import get_dealers_from_cf, get_dealer_reviews_from_cf, post_request
+from .models import CarModel
+from .restapis import get_dealers_from_cf, get_dealer_from_cf, get_dealer_reviews_from_cf, post_request
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -75,7 +76,10 @@ def get_dealerships(request):
 def get_dealer_details(request, dealer_id):
     if request.method == "GET":
         url = "https://us-south.functions.appdomain.cloud/api/v1/web/f65fcf3d-6503-43a5-956c-c6ccef1a7764/dealership-package/get-review"
+        dealer = get_dealer_from_cf(dealer_id)
         context = {
+            'dealer_id': dealer_id,
+            'dealer': dealer,
             'reviews': get_dealer_reviews_from_cf(url, dealer_id)
         }
         return render(request, 'djangoapp/dealer_details.html', context)
@@ -84,20 +88,28 @@ def get_dealer_details(request, dealer_id):
 def add_review(request, dealer_id):
     if request.user.is_authenticated:
         if request.method == 'GET':
-            return render(request, 'djangoapp/add_review.html', { 'dealer_id': dealer_id })
+            dealer = get_dealer_from_cf(dealer_id)
+            cars = CarModel.objects.filter(dealer_id=dealer_id)
+            return render(request, 'djangoapp/add_review.html', { 'dealer_id': dealer_id, 'dealer': dealer, 'cars': cars })
         elif request.method == 'POST':
-            review = {}
-            review['car_make'] = request.POST['car_make']
-            review['car_model'] = request.POST['car_model']
-            review['car_year'] = request.POST['car_year']
-            review['purchase_date'] = request.POST['purchase_date']
-            review['review'] = request.POST['review']
-            review['name'] = request.user.username
-            review['purchase'] = False
-            # review["time"] = datetime.utcnow().isoformat()
-            review['dealership'] = dealer_id
-            response = post_request('https://us-south.functions.appdomain.cloud/api/v1/web/f65fcf3d-6503-43a5-956c-c6ccef1a7764/dealership-package/post-review', { 'review': review }, dealerId=dealer_id)
-            return HttpResponse(response)
+            payload = {}
+            payload['review'] = request.POST['content']
+            payload['purchase_date'] = request.POST['purchase_date']
+            payload['name'] = request.user.username
+            payload['purchase'] = request.POST['purchase_check']
+
+            if 'car' in request.POST:
+                car_selection = request.POST['car']
+                car = CarModel.objects.get(id=car_selection)
+                payload['car_make'] = car.car_make.name
+                payload['car_model'] = car.name
+                payload['car_year'] = car.year
+                
+            # payload["time"] = datetime.utcnow().isoformat()
+            payload['dealership'] = dealer_id
+
+            response = post_request('https://us-south.functions.appdomain.cloud/api/v1/web/f65fcf3d-6503-43a5-956c-c6ccef1a7764/dealership-package/post-review', payload, dealerId=dealer_id)           
+            return HttpResponseRedirect(reverse('djangoapp:dealer_details', kwargs={'dealer_id': dealer_id}))
     else:
         return redirect(reverse('djangoapp:index'))
 
